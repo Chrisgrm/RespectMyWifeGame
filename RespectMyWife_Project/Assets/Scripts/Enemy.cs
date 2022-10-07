@@ -4,52 +4,39 @@ using UnityEngine;
 [RequireComponent(typeof(Controller2D))]
 public class Enemy : MonoBehaviour
 {
-    public float jumpHigh = 130;
-    public float time2JumpMaxHigh = .5f;
+    //Enemy Variables
+    protected float jumpHigh;
+    protected float time2JumpMaxHigh ;   
+    protected float moveSpeed;
+    protected float accelerationTimeAirbone ;
+    protected float accelerationTimeGrounded ;
+    protected float enemyNoiseSensibility;
+    protected float visionCamp;
 
-    float gravity;
-    float moveSpeed = 200;
-    float accelerationTimeAirbone = .5f;
-    float accelerationTimeGrounded = .2f;
-    float jumpVelocity;
-    float velocityXSmoothing;    
-    Vector3 velocity;
-    float enemyNoiseSensibility=260;
-    float visionCamp=750;
-    float directionX;
-
+    //
+    protected float gravity;
+    protected float jumpVelocity;
+    protected float velocityXSmoothing;    
+    protected Vector3 velocity;   
+    protected float directionX;
 
 
     BoxCollider2D collider;
-    Controller2D controller;
+    protected Controller2D controller;
     public LayerMask collisionMask;
    
-    void Start()
+    public void Start()
     {    
         controller = GetComponent<Controller2D>();
         gravity = -(2 * jumpHigh) / Mathf.Pow(time2JumpMaxHigh, 2);
         jumpVelocity = Mathf.Abs(gravity) * time2JumpMaxHigh;
         velocity = Vector3.left;
-        directionX = -1;
+        directionX = 1;
 
 
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (controller.collisionInfo.above || controller.collisionInfo.below)
-        {
-            velocity.y = 0;
-        }      
-                
-        velocity.y += gravity * Time.deltaTime;        
-        VisionRaycast(ref velocity);         
-        controller.Move(velocity * Time.deltaTime);
-    }
-
-
-    void VisionRaycast(ref Vector3 velocity)
+    public void VisionRaycast(ref Vector3 velocity)
     {
         directionX = Mathf.Sign(velocity.x);
         float targetVelocityX = moveSpeed * directionX;
@@ -89,6 +76,17 @@ public class Enemy : MonoBehaviour
 
         }
         if(!isHit)velocity.x= Mathf.SmoothDamp(velocity.x, 0, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
+    }
+
+    protected void StandardActions(){
+        if (controller.collisionInfo.above || controller.collisionInfo.below)
+        {
+            velocity.y = 0;
+        }      
+                
+        velocity.y += gravity * Time.deltaTime;        
+        VisionRaycast(ref velocity);         
+        controller.Move(velocity * Time.deltaTime);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

@@ -12,6 +12,7 @@ public class Enemy : MonoBehaviour
     protected float accelerationTimeGrounded ;
     protected float enemyNoiseSensibility;
     protected float visionCamp;
+    protected float atackRange;
 
     //
     protected float gravity;
@@ -28,12 +29,6 @@ public class Enemy : MonoBehaviour
     public void Start()
     {    
         controller = GetComponent<Controller2D>();
-        gravity = -(2 * jumpHigh) / Mathf.Pow(time2JumpMaxHigh, 2);
-        jumpVelocity = Mathf.Abs(gravity) * time2JumpMaxHigh;
-        velocity = Vector3.left;
-        directionX = 1;
-
-
     }
 
     public void VisionRaycast(ref Vector3 velocity)
@@ -52,10 +47,16 @@ public class Enemy : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLenght, collisionMask);
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLenght, Color.blue);
 
+            
             if (hit)
             {
                 velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
                 isHit = true;
+                if (hit.distance <= atackRange)
+                {
+                    print("atack");
+                }
+                
             }
             else
             {
@@ -70,7 +71,10 @@ public class Enemy : MonoBehaviour
 
             if (backHit)
             {
-                velocity.x = backDirectionX;
+                
+               
+                velocity.x = Mathf.SmoothDamp(velocity.x, 1*backDirectionX, ref velocityXSmoothing, (controller.collisionInfo.below) ? (accelerationTimeGrounded*0.5f) : accelerationTimeAirbone);                    
+                
 
             }
 
@@ -79,6 +83,8 @@ public class Enemy : MonoBehaviour
     }
 
     protected void StandardActions(){
+
+ 
         if (controller.collisionInfo.above || controller.collisionInfo.below)
         {
             velocity.y = 0;
@@ -87,6 +93,25 @@ public class Enemy : MonoBehaviour
         velocity.y += gravity * Time.deltaTime;        
         VisionRaycast(ref velocity);         
         controller.Move(velocity * Time.deltaTime);
+    }
+
+    protected void StartConfig(bool initialDirection)
+    {
+        //calculo de gravedad y velocidad de salto
+        gravity = -(2 * jumpHigh) / Mathf.Pow(time2JumpMaxHigh, 2);
+        jumpVelocity = Mathf.Abs(gravity) * time2JumpMaxHigh;
+
+        //configuracion de direccion inicial
+        if (initialDirection)
+        {            
+            velocity.x=1;
+        }
+        else
+        {
+            velocity.x = -1;           
+        }
+      
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)

@@ -64,12 +64,7 @@ public class Player : MonoBehaviour
         else
         {
             atack.enabled = false;
-        }
-
-        
-       
-
-   
+        }      
     }
     void UpdateWeaponPosition(Vector3 velocity ){
         float directionX = Mathf.Sign(velocity.x);

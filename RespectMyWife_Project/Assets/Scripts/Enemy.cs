@@ -26,7 +26,7 @@ public class Enemy : MonoBehaviour
     protected Controller2D controller;
     public LayerMask collisionMask;
    
-    public void Start()
+    public virtual void Start()
     {    
         controller = GetComponent<Controller2D>();
     }
@@ -37,11 +37,12 @@ public class Enemy : MonoBehaviour
         float targetVelocityX = moveSpeed * directionX;
         float backDirectionX = -Mathf.Sign(velocity.x);
         float backRayLenght = enemyNoiseSensibility;
+        float rayLenght = visionCamp;
         bool isHit=false;
         for (int i = 0; i < controller.horizontalRaycount; i++)
         {
                      
-            float rayLenght = visionCamp;
+            
             Vector2 rayOrigin = (directionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
             rayOrigin += Vector2.up * (controller.horizontalRaySpacing * i) ;
             RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLenght, collisionMask);
@@ -50,16 +51,13 @@ public class Enemy : MonoBehaviour
             
             if (hit)
             {
-                velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
-                isHit = true;
-                if (hit.distance <= atackRange)
-                {
-                    print("atack");
-                }
                 
+                OnVisionEnter(hit);
+                isHit = true;
             }
             else
             {
+                
                 isHit = false;              
             }
 
@@ -67,13 +65,13 @@ public class Enemy : MonoBehaviour
             Vector2 backRayOrigin = (backDirectionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
             backRayOrigin += Vector2.up * (controller.horizontalRaySpacing * i);
             RaycastHit2D backHit = Physics2D.Raycast(backRayOrigin, Vector2.right * backDirectionX, backRayLenght, collisionMask);
-            Debug.DrawRay(backRayOrigin, Vector2.right * backDirectionX * backRayLenght, Color.blue);
+            Debug.DrawRay(backRayOrigin, Vector2.right * backDirectionX * backRayLenght, Color.green);
 
             if (backHit)
             {
                 
                
-                velocity.x = Mathf.SmoothDamp(velocity.x, 1*backDirectionX, ref velocityXSmoothing, (controller.collisionInfo.below) ? (accelerationTimeGrounded*0.5f) : accelerationTimeAirbone);                    
+                velocity.x = Mathf.SmoothDamp(velocity.x, 1*backDirectionX, ref velocityXSmoothing, (controller.collisionInfo.below) ? (accelerationTimeGrounded*0.5f) : accelerationTimeAirbone);
                 
 
             }
@@ -103,7 +101,8 @@ public class Enemy : MonoBehaviour
 
         //configuracion de direccion inicial
         if (initialDirection)
-        {            
+        {
+            
             velocity.x=1;
         }
         else
@@ -111,6 +110,22 @@ public class Enemy : MonoBehaviour
             velocity.x = -1;           
         }
       
+
+    }
+    public virtual void OnVisionEnter(RaycastHit2D hit)
+    {       
+        float targetVelocityX = moveSpeed * directionX;
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
+       
+        
+        if (hit.distance <= atackRange)
+        {
+            AtackAction();
+        }
+    }
+
+    public virtual void AtackAction()
+    {
 
     }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [RequireComponent (typeof (Controller2D))]
@@ -15,31 +15,32 @@ public class Player : MonoBehaviour
     float velocityXSmoothing;
     bool canJump;
     Vector3 velocity;
-
+    
     public Weapon weaponEquiped;
     Controller2D controller;
     CapsuleCollider2D attackCollider;
     public Joystick movementJstick;
-    bool haveWeapon=false;
-    public RectTransform asd;
-    Weapon lastWeaponPased;
+    bool haveWeapon=false;    
+    public RectTransform collectWeaponBtn;
+    Weapon lastWeaponPased;    
 
-
+    
     void Start()
     {
         controller = GetComponent<Controller2D>();
-        attackCollider = transform.GetChild(1).GetComponent<CapsuleCollider2D>();
-
+        attackCollider = transform.GetChild(1).GetComponent<CapsuleCollider2D>(); 
         gravity = -(2 * jumpHigh) / Mathf.Pow(time2JumpMaxHigh, 2);
         jumpVelocity = Mathf.Abs(gravity)  * time2JumpMaxHigh;
-      
+        
+        
     }
 
     // Update is called once per frame
     void Update()
     {
+        float targetVelocityX ;
         UpdateWeaponPosition(velocity);
-        
+        // reinicio de gravedad
         if (controller.collisionInfo.above || controller.collisionInfo.below)
         {
             velocity.y = 0;
@@ -48,14 +49,25 @@ public class Player : MonoBehaviour
         
         if ((Input.GetButtonDown("Jump")|| movementJstick.Vertical > .75f) && controller.collisionInfo.below && canJump)
         {
-            velocity.y = jumpVelocity;
+            if (haveWeapon){
+                velocity.y = jumpVelocity-weaponEquiped.getWeight();
+            }else{
+                velocity.y = jumpVelocity;
+            }
+            
             canJump = false;
         }
         if (movementJstick.Vertical < .2f) canJump = true;
-
-        float targetVelocityX = (input.x + movementJstick.Horizontal) * moveSpeed;      
+        //movimiento en x 
+        if(haveWeapon)
+        {
+            targetVelocityX = (input.x + movementJstick.Horizontal) * (moveSpeed-weaponEquiped.getWeight()); 
+        }else{
+            targetVelocityX = (input.x + movementJstick.Horizontal) * moveSpeed; 
+        }
+             
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
-
+        //gravedad
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
 
@@ -70,6 +82,10 @@ public class Player : MonoBehaviour
                 PlayerAttack();
             }
         }
+        
+        
+        
+        
       
     }
     void UpdateWeaponPosition(Vector3 velocity ){
@@ -84,8 +100,9 @@ public class Player : MonoBehaviour
       
         if (collision.gameObject.CompareTag("Weapon"))
         {
-            asd.gameObject.SetActive(true);
-            lastWeaponPased = collision.gameObject.GetComponent<Weapon>();
+            collectWeaponBtn.gameObject.SetActive(true);
+            lastWeaponPased = collision.gameObject.GetComponent<Weapon>();            
+       
         }
 
     }
@@ -93,8 +110,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Weapon"))
         {
-            asd.gameObject.SetActive(false);
-            
+            collectWeaponBtn.gameObject.SetActive(false);          
 
         }
 
@@ -106,9 +122,8 @@ public class Player : MonoBehaviour
     }
     public void CollectWeapon()
     {
-        haveWeapon = true;
-        weaponEquiped = lastWeaponPased;
-
+        haveWeapon = true;        
+        weaponEquiped = lastWeaponPased;        
     }
       
 

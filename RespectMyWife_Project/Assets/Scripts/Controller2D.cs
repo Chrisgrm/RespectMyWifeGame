@@ -83,5 +83,5 @@ public class Controller2D : RaycastController
             left = right = false;
         }
     }
-    
+
 }

@@ -15,17 +15,20 @@ public class Player : MonoBehaviour
     float velocityXSmoothing;
     bool canJump;
     Vector3 velocity;
-    
-    
+
+    public Weapon weaponEquiped;
     Controller2D controller;
-    CapsuleCollider2D atack;
+    CapsuleCollider2D attackCollider;
     public Joystick movementJstick;
-    
+    bool haveWeapon=false;
+    public RectTransform asd;
+    Weapon lastWeaponPased;
+
 
     void Start()
     {
         controller = GetComponent<Controller2D>();
-        atack = transform.GetChild(1).GetComponent<CapsuleCollider2D>();
+        attackCollider = transform.GetChild(1).GetComponent<CapsuleCollider2D>();
 
         gravity = -(2 * jumpHigh) / Mathf.Pow(time2JumpMaxHigh, 2);
         jumpVelocity = Mathf.Abs(gravity)  * time2JumpMaxHigh;
@@ -58,18 +61,55 @@ public class Player : MonoBehaviour
 
         if (Input.GetButton("Fire1"))
         {
-            
-            atack.enabled = true;
+            if (haveWeapon)
+            {
+                weaponEquiped.WeaponAttack();
+            }
+            else
+            {
+                PlayerAttack();
+            }
         }
-        else
-        {
-            atack.enabled = false;
-        }      
+      
     }
     void UpdateWeaponPosition(Vector3 velocity ){
         float directionX = Mathf.Sign(velocity.x);
         float range = 0.62f;      
-        atack.offset = new Vector2(directionX*range,0);
+        attackCollider.offset = new Vector2(directionX*range,0);
         
     }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+      
+        if (collision.gameObject.CompareTag("Weapon"))
+        {
+            asd.gameObject.SetActive(true);
+            lastWeaponPased = collision.gameObject.GetComponent<Weapon>();
+        }
+
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.CompareTag("Weapon"))
+        {
+            asd.gameObject.SetActive(false);
+            
+
+        }
+
+    }
+    private void PlayerAttack()
+    {
+        attackCollider.enabled = true;
+        print("atackpunch");
+    }
+    public void CollectWeapon()
+    {
+        haveWeapon = true;
+        weaponEquiped = lastWeaponPased;
+
+    }
+      
+
 }

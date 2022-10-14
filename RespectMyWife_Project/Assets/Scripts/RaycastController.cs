@@ -60,4 +60,5 @@ public class RaycastController : MonoBehaviour
         public Vector2 bottomLeft, bottomRight;
 
     }
+
 }

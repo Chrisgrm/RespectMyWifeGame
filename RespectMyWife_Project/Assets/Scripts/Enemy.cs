@@ -22,7 +22,7 @@ public class Enemy : MonoBehaviour
     protected float directionX;
 
 
-    BoxCollider2D collider;
+    //BoxCollider2D collider;
     protected Controller2D controller;
     public LayerMask collisionMask;
    

@@ -17,7 +17,7 @@ public class Enemy_Dog : Enemy
         moveSpeed = 600;
         accelerationTimeAirbone = .5f;
         accelerationTimeGrounded = 0.8f;
-        enemyNoiseSensibility = 500;
+        backVisionCamp = 500;
         visionCamp= 1100;
         atackRange = 50;       
         StartConfig(initialDirection);        
@@ -41,9 +41,9 @@ public class Enemy_Dog : Enemy
 
 
     }
-    public override void OnVisionEnter(RaycastHit2D hit)
+    public override void OnVisionEnter(RaycastHit hit)
     {
-        
+        print("1");
         if (masterGuard.getOnvision())
         {   
             base.OnVisionEnter(hit);

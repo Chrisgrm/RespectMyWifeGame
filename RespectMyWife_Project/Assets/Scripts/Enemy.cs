@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     protected float moveSpeed;
     protected float accelerationTimeAirbone ;
     protected float accelerationTimeGrounded ;
-    protected float enemyNoiseSensibility;
+    protected float backVisionCamp;
     protected float visionCamp;
     protected float atackRange;
 
@@ -33,46 +33,54 @@ public class Enemy : MonoBehaviour
 
     public void VisionRaycast(ref Vector3 velocity)
     {
-        directionX = Mathf.Sign(velocity.x);
+        if (velocity.x > 0)
+        {
+            directionX =  1;
+        }else if (velocity.x < 0)
+        {
+            directionX = -1;
+        }
+        
         float targetVelocityX = moveSpeed * directionX;
-        float backDirectionX = -Mathf.Sign(velocity.x);
-        float backRayLenght = enemyNoiseSensibility;
+        float backDirectionX = -directionX;
+        float backRayLenght = backVisionCamp;
         float rayLenght = visionCamp;
         bool isHit=false;
         for (int i = 0; i < controller.horizontalRaycount; i++)
         {
                      
             
-            Vector2 rayOrigin = (directionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
-            rayOrigin += Vector2.up * (controller.horizontalRaySpacing * i) ;
-            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLenght, collisionMask);
+            Vector3 rayOrigin = (directionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
+            rayOrigin += Vector3.up * (controller.horizontalRaySpacing * i) ;
+            RaycastHit hit;           
             Debug.DrawRay(rayOrigin, Vector2.right * directionX * rayLenght, Color.blue);
 
             
-            if (hit)
+            if (Physics.Raycast(rayOrigin, Vector2.right * directionX,out hit, rayLenght, collisionMask))
             {
                 
                 OnVisionEnter(hit);
                 isHit = true;
+             
             }
             else
             {
-                
+              
                 isHit = false;              
             }
 
             // Backvision Raycast
-            Vector2 backRayOrigin = (backDirectionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
-            backRayOrigin += Vector2.up * (controller.horizontalRaySpacing * i);
-            RaycastHit2D backHit = Physics2D.Raycast(backRayOrigin, Vector2.right * backDirectionX, backRayLenght, collisionMask);
+            Vector3 backRayOrigin = (backDirectionX == -1) ? controller.raycastOrigins.bottomLeft : controller.raycastOrigins.bottomRight;
+            backRayOrigin += Vector3.up * (controller.horizontalRaySpacing * i);
+            bool backHit = Physics.Raycast(backRayOrigin, Vector2.right * backDirectionX, backRayLenght, collisionMask);
             Debug.DrawRay(backRayOrigin, Vector2.right * backDirectionX * backRayLenght, Color.green);
 
             if (backHit)
             {
                 
                
-                velocity.x = Mathf.SmoothDamp(velocity.x, 1*backDirectionX, ref velocityXSmoothing, (controller.collisionInfo.below) ? (accelerationTimeGrounded*0.5f) : accelerationTimeAirbone);
-                
+                velocity.x = Mathf.SmoothDamp(velocity.x, 1*backDirectionX, ref velocityXSmoothing, (controller.collisionInfo.below) ? (accelerationTimeGrounded) : accelerationTimeAirbone);
+               
 
             }
 
@@ -102,24 +110,26 @@ public class Enemy : MonoBehaviour
         //configuracion de direccion inicial
         if (initialDirection)
         {
-            
-            velocity.x=1;
+            directionX = 1;
         }
         else
         {
-            velocity.x = -1;           
+            directionX = -1;
         }
       
 
     }
-    public virtual void OnVisionEnter(RaycastHit2D hit)
-    {       
+    public virtual void OnVisionEnter(RaycastHit hit)
+    {
+        
         float targetVelocityX = moveSpeed * directionX;
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, (controller.collisionInfo.below) ? accelerationTimeGrounded : accelerationTimeAirbone);
-       
-        
+
+      
         if (hit.distance <= atackRange)
         {
+            
+            
             AtackAction();
         }
     }
@@ -129,13 +139,11 @@ public class Enemy : MonoBehaviour
 
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (collision.tag == "Atack")
-        {
-
+        if (collision.collider.CompareTag("Bullet")){
+            print("damage");
         }
-
     }
 
 

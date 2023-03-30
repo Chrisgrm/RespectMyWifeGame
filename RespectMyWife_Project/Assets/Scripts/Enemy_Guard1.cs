@@ -18,7 +18,7 @@ public class Enemy_Guard1 : Enemy
         moveSpeed = 200;
         accelerationTimeAirbone = .5f;
         accelerationTimeGrounded = .2f;
-        enemyNoiseSensibility = 260;
+        backVisionCamp = 260;
         visionCamp= 750;
         atackRange = 60;
         StartConfig(initialDirection);
@@ -35,23 +35,24 @@ public class Enemy_Guard1 : Enemy
     }
     public override void AtackAction()
     {
-        UpdateWeaponPosition(velocity);
-        base.AtackAction();
+       
+        UpdateWeaponPosition(directionX);
+        //base.AtackAction();
         velocity.x= 0;
         attackCollider.enabled = true;
 
 
     }
-    public override void OnVisionEnter(RaycastHit2D hit)
+    public override void OnVisionEnter(RaycastHit hit)
     {
         
         base.OnVisionEnter(hit);
         OnVision = true;  
 
     }
-    void UpdateWeaponPosition(Vector3 velocity)
+    void UpdateWeaponPosition(float directionX)
     {
-        float directionX = Mathf.Sign(velocity.x);
+        
         float range = 0.62f;
         attackCollider.offset = new Vector2(directionX * range, 0);
 
